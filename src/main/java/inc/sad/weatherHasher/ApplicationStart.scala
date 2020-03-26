@@ -5,8 +5,8 @@ import java.util.Properties
 import ch.hsr.geohash.GeoHash
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.{Consumed, Produced}
-import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
+import org.apache.kafka.streams.kstream.{Consumed, KeyValueMapper, Produced}
+import org.apache.kafka.streams.{KafkaStreams, KeyValue, StreamsBuilder, StreamsConfig}
 import org.apache.log4j.Logger
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
@@ -35,16 +35,23 @@ object ApplicationStart extends App {
     .stream(conf.kafkaConfig.sourceTopic,
       Consumed.`with`(Serdes.String(), Serdes.String())
     )
-    .peek((key: String, value: String) => {
-      try {
+    .map[String, String] {
+      (_: String, value: String) => {
+        var geoHash = ""
         val record = List.from(value.split(","))
-        val geoHash = GeoHash.geoHashStringWithCharacterPrecision(record(0).toDouble, record(2).toDouble, conf.applicationConfig.geohashPrecision)
-        record::List(geoHash)
-      } catch {
-        case e: Exception =>
-          LOG.error(e)
+        try {
+          geoHash = GeoHash.geoHashStringWithCharacterPrecision(
+            record(0).toDouble,
+            record(2).toDouble,
+            conf.applicationConfig.geohashPrecision
+          )
+        } catch {
+          case e: Exception =>
+            LOG.error(e)
+        }
+        KeyValue.pair(geoHash, record mkString(","))
       }
-    })
+    }
     .to(conf.kafkaConfig.targetTopic,
       Produced.`with`(Serdes.String(), Serdes.String())
     )
