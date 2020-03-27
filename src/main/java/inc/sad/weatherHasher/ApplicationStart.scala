@@ -37,19 +37,22 @@ object ApplicationStart extends App {
     )
     .map[String, String] {
       (_: String, value: String) => {
-        var geoHash = ""
+        var nKey = ""
+        var nValue = ""
         val record = List.from(value.split(","))
         try {
-          geoHash = GeoHash.geoHashStringWithCharacterPrecision(
+          val geoHash = GeoHash.geoHashStringWithCharacterPrecision(
             record(1).toDouble,
             record(0).toDouble,
             conf.applicationConfig.geohashPrecision
           )
+          nKey = geoHash + "-" + record(4)
+          nValue = record.slice(2, 4).mkString(",")
         } catch {
           case e: Exception =>
             LOG.error(e)
         }
-        KeyValue.pair(geoHash, record mkString(","))
+        KeyValue.pair(nKey, nValue)
       }
     }
     .to(conf.kafkaConfig.targetTopic,
