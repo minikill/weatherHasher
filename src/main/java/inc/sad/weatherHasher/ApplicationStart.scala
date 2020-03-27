@@ -13,7 +13,8 @@ import pureconfig.generic.auto._
 
 /**
  * It's only method for streaming processing weather data
- * This method calculates geohash bases on longitude and latitude and sends it into kafka output topic
+ * This method calculates geohash bases on longitude and latitude
+ * gets rid of doubled columns and sends it into kafka output topic
  */
 
 object ApplicationStart extends App {
@@ -22,6 +23,7 @@ object ApplicationStart extends App {
 
   val conf = ConfigSource.default.loadOrThrow[Config]
 
+  // Properties for kafka
   val props = new Properties
   props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, conf.kafkaConfig.applicationId)
   props.setProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, conf.kafkaConfig.bootstrapServers.mkString(","))
@@ -31,6 +33,7 @@ object ApplicationStart extends App {
 
   val builder = new StreamsBuilder
 
+  // Record transforming processing
   builder
     .stream(conf.kafkaConfig.sourceTopic,
       Consumed.`with`(Serdes.String(), Serdes.String())
@@ -59,6 +62,7 @@ object ApplicationStart extends App {
       Produced.`with`(Serdes.String(), Serdes.String())
     )
 
+  // Stream processing start
   val streams = new KafkaStreams(builder.build, props)
   streams.start()
   LOG.info("Stream started")
