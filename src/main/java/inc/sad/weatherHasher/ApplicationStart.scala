@@ -5,7 +5,7 @@ import java.util.Properties
 import ch.hsr.geohash.GeoHash
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.{Consumed, KeyValueMapper, Produced}
+import org.apache.kafka.streams.kstream.{Consumed, Produced}
 import org.apache.kafka.streams.{KafkaStreams, KeyValue, StreamsBuilder, StreamsConfig}
 import org.apache.log4j.Logger
 import pureconfig.ConfigSource
@@ -18,7 +18,7 @@ import pureconfig.generic.auto._
 
 object ApplicationStart extends App {
 
-  val LOG = Logger.getLogger(this.getClass.getName)
+  val LOG = Logger.getLogger(this.getClass)
 
   val conf = ConfigSource.default.loadOrThrow[Config]
 
@@ -41,8 +41,8 @@ object ApplicationStart extends App {
         val record = List.from(value.split(","))
         try {
           geoHash = GeoHash.geoHashStringWithCharacterPrecision(
+            record(1).toDouble,
             record(0).toDouble,
-            record(2).toDouble,
             conf.applicationConfig.geohashPrecision
           )
         } catch {
@@ -58,11 +58,12 @@ object ApplicationStart extends App {
 
   val streams = new KafkaStreams(builder.build, props)
   streams.start()
+  LOG.info("Stream started")
 
   Runtime.getRuntime.addShutdownHook(new Thread(() => {
     try {
       streams.close
-      LOG.info("String closed")
+      LOG.info("Stream closed")
     } catch {
       case e: Exception =>
         LOG.error(e)
