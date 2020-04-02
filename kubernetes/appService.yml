@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: weather-hasher
+  labels:
+    app: weather-hasher
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5556
+      targetPort: metrics
+      name: metrics
+      protocol: TCP
+  selector:
+    app: weather-hasher

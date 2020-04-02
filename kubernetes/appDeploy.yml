@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-hasher
+  labels:
+    app: weather-hasher
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: weather-hasher
+      labels:
+        app: weather-hasher
+    spec:
+      volumes:
+        - name: hasher-jmx-config
+          configMap:
+            name: weather-hasher-jmx-configmap
+        - name: hasher-config
+          configMap:
+            name: weather-hasher-configmap
+      containers:
+        - name: weather-hasher
+          image: weather_hasher
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WEATHERHASHER_CONFIG
+              value: /etc/weather-hasher/hasher.conf
+          volumeMounts:
+            - name: hasher-config
+              mountPath: /etc/weather-hasher
+        - name: prometheus-jmx-exporter
+          volumeMounts:
+            - name: hasher-jmx-config
+              mountPath: /etc/jmx-exporter
+          image: solsson/kafka-prometheus-jmx-exporter:latest
+          command:
+            - java
+            - -jar
+            - jmx_prometheus_httpserver.jar
+            - "5556"
+            - /etc/jmx-exporter/jmx-prometheus.yml
+          ports:
+            - containerPort: 5556
+              name: metrics
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      app: weather-hasher

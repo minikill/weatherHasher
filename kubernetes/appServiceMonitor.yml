@@ -1,0 +1,12 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: weather-hasher-service-monitor
+  labels:
+    app: weather-hasher
+spec:
+  selector:
+    matchLabels:
+      app: weather-hasher
+  endpoints:
+    - port: metrics
