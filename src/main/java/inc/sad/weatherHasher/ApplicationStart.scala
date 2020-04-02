@@ -8,7 +8,6 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.kstream.{Consumed, Produced}
 import org.apache.kafka.streams.{KafkaStreams, KeyValue, StreamsBuilder, StreamsConfig}
 import org.apache.log4j.Logger
-import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 /**
@@ -21,7 +20,7 @@ object ApplicationStart extends App {
 
   val LOG = Logger.getLogger(this.getClass)
 
-  val conf = ConfigSource.default.loadOrThrow[Config]
+  val conf = ConfigService.loadConfiguration(scala.util.Properties.envOrNone("WEATHERHASHER_CONFIG").get)
 
   // Properties for kafka
   val props = new Properties

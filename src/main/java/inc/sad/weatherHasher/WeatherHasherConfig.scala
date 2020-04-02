@@ -4,7 +4,7 @@ package inc.sad.weatherHasher
  *  A few case classes for describing config structure for PureConfig
  */
 
-case class Config(applicationConfig: ApplicationConfig, kafkaConfig: KafkaConfig)
+case class WeatherHasherConfig(applicationConfig: ApplicationConfig, kafkaConfig: KafkaConfig)
 
 case class ApplicationConfig(geohashPrecision: Int,
                              consumerPoolSize: Int)
