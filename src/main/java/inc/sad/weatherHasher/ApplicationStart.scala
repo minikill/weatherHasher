@@ -20,6 +20,7 @@ object ApplicationStart extends App {
 
   val LOG = Logger.getLogger(this.getClass)
 
+  // Config loading by path from environment variable
   val conf = ConfigService.loadConfiguration(scala.util.Properties.envOrNone("WEATHERHASHER_CONFIG").get)
 
   // Properties for kafka

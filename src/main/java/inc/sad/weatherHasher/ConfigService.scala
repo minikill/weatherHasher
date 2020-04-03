@@ -6,6 +6,12 @@ import javax.naming.ConfigurationException
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
+/**
+ *
+ * Object for loading config files by purgeConfig
+ *
+ */
+
 object ConfigService {
 
   def loadConfiguration(configFilePath: String): WeatherHasherConfig = {
